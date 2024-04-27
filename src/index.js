@@ -6,6 +6,21 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
+const calculateDistance = (start, end) => {
+  const earthRadius = 6371; // Radius of the Earth in kilometers
+  const { latitude: lat1, longitude: lon1 } = start;
+  const { latitude: lat2, longitude: lon2 } = end;
+
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = earthRadius * c;
+  return distance.toFixed(2); // Distance rounded to 2 decimal places in kilometers
+};
+
 export default function App() {
   const [markers, setMarkers] = useState([]);
   const [mapRegion, setMapRegion] = useState(null);
@@ -99,7 +114,12 @@ export default function App() {
           <View style={styles.locationInfo}>
             <Text style={styles.locationTitle}>GPS Location: {currentLocation ? `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}` : 'Loading...'}</Text>
             {markers.map(marker => (
-              <Text key={marker.id} style={styles.locationText}>{marker.title}: {marker.latitude.toFixed(6)}, {marker.longitude.toFixed(6)}</Text>
+              <Text key={marker.id} style={styles.locationText}>
+                {marker.title}: {marker.latitude.toFixed(6)}, {marker.longitude.toFixed(6)}
+                {currentLocation && (
+                  <Text> Distance: {calculateDistance(currentLocation, marker)} km</Text>
+                )}
+              </Text>
             ))}
           </View>
         </ScrollView>
